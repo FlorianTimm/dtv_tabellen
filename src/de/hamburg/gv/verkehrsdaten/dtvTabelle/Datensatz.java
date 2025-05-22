@@ -1,10 +1,10 @@
-package de.hamburg.gv.s2.dtvTabelle;
+package de.hamburg.gv.verkehrsdaten.dtvTabelle;
 
 /**
- * Datensatz-Klasse (eine Zählung einer Station)
+ * Datensatz-Klasse (eine ZÃ¤hlung einer Station)
  * 
  * @author Florian Timm, LGV Hamburg
- * @author Stefanie Boese, BWVI Hamburg
+ * @author Stefanie Boese, BVM Hamburg
  * @version 2016.10.28
  */
 public class Datensatz {
@@ -16,118 +16,111 @@ public class Datensatz {
      * @return the zstNr
      */
     public int getZstNr() {
-	return zstNr;
+        return zstNr;
     }
 
     public String getZstNrStr() {
-	if (zstNr == 0) {
-	    return "";
-	}
-	return (new Integer(zstNr)).toString();
+        if (zstNr == 0) {
+            return "";
+        }
+        return String.valueOf(zstNr);
     }
 
     /**
-     * @param zstNr
-     *            the zstNr to set
+     * @param zstNr the zstNr to set
      */
     public void setZstNr(int zstNr) {
-	this.zstNr = zstNr;
+        this.zstNr = zstNr;
     }
 
     String baustelle;
 
     public Datensatz() {
-	// TODO Auto-generated constructor stub
+        // TODO Auto-generated constructor stub
     }
 
     /**
      * @return the ebene
      */
     public int getEbene() {
-	return ebene;
+        return ebene;
     }
 
     /**
-     * @param ebene
-     *            the ebene to set
+     * @param ebene the ebene to set
      */
     public void setEbene(int ebene) {
-	this.ebene = ebene;
+        this.ebene = ebene;
     }
 
     /**
      * @return the zaehlstelle
      */
     public String getZaehlstelle() {
-	return zaehlstelle;
+        return zaehlstelle;
     }
 
     /**
-     * @param zaehlstelle
-     *            the zaehlstelle to set
+     * @param zaehlstelle the zaehlstelle to set
      */
     public void setZaehlstelle(String zaehlstelle) {
-	this.zaehlstelle = zaehlstelle;
+        this.zaehlstelle = zaehlstelle;
     }
 
     /**
      * @return the dtv
      */
     public int getDtv() {
-	return dtv;
+        return dtv;
     }
 
     /**
-     * @param dtv
-     *            the dtv to set
+     * @param dtv the dtv to set
      */
     public void setDtv(int dtv) {
-	this.dtv = dtv;
+        this.dtv = dtv;
     }
 
     /**
      * @return the dtvw
      */
     public int getDtvw() {
-	return dtvw;
+        return dtvw;
     }
 
     /**
-     * @param dtvw
-     *            the dtvw to set
+     * @param dtvw the dtvw to set
      */
     public void setDtvw(int dtvw) {
-	this.dtvw = dtvw;
+        this.dtvw = dtvw;
     }
 
     /**
      * @return the sv
      */
     public int getSv() {
-	return sv;
+        return sv;
     }
 
     /**
-     * @param sv
-     *            the sv to set
+     * @param sv the sv to set
      */
     public void setSv(int sv) {
-	this.sv = sv;
+        this.sv = sv;
     }
 
     /**
      * @return the baustelle
      */
     public String getBaustelle() {
-	return baustelle;
+        return baustelle;
     }
 
     /**
-     * @param baustelle
-     *            the baustelle to set
+     * @param baustelle the baustelle to set
      */
     public void setBaustelle(String baustelle) {
-	this.baustelle = baustelle;
+        this.baustelle = baustelle;
     }
 
 }
