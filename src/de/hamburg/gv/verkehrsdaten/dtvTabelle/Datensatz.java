@@ -8,119 +8,89 @@ package de.hamburg.gv.verkehrsdaten.dtvTabelle;
  * @version 2016.10.28
  */
 public class Datensatz {
-    int ebene;
-    String zaehlstelle;
-    int dtv, dtvw, sv, zstNr = 0;
+    String zaehlstelle = "", zstNr = "", anmerkung = "", erhebung = "";
+    int tensor = -1, dtv = -1, dtvw = -1, sv = -1;
 
-    /**
-     * @return the zstNr
-     */
-    public int getZstNr() {
+    public String getZstNr() {
+        if (zstNr == null || zstNr.isEmpty()) {
+            return "";
+        }
         return zstNr;
     }
 
-    public String getZstNrStr() {
-        if (zstNr == 0) {
-            return "";
-        }
-        return String.valueOf(zstNr);
-    }
-
-    /**
-     * @param zstNr the zstNr to set
-     */
-    public void setZstNr(int zstNr) {
+    public void setZstNr(String zstNr) {
         this.zstNr = zstNr;
     }
 
-    String baustelle;
-
-    public Datensatz() {
-        // TODO Auto-generated constructor stub
+    public int getTensor() {
+        return tensor;
     }
 
-    /**
-     * @return the ebene
-     */
-    public int getEbene() {
-        return ebene;
+
+    public void setTensor(int tensor) {
+        this.tensor = tensor;
     }
 
-    /**
-     * @param ebene the ebene to set
-     */
-    public void setEbene(int ebene) {
-        this.ebene = ebene;
-    }
 
-    /**
-     * @return the zaehlstelle
-     */
     public String getZaehlstelle() {
         return zaehlstelle;
     }
 
-    /**
-     * @param zaehlstelle the zaehlstelle to set
-     */
+
     public void setZaehlstelle(String zaehlstelle) {
         this.zaehlstelle = zaehlstelle;
     }
 
-    /**
-     * @return the dtv
-     */
+
     public int getDtv() {
         return dtv;
     }
 
-    /**
-     * @param dtv the dtv to set
-     */
+
     public void setDtv(int dtv) {
         this.dtv = dtv;
     }
 
-    /**
-     * @return the dtvw
-     */
+
     public int getDtvw() {
         return dtvw;
     }
 
-    /**
-     * @param dtvw the dtvw to set
-     */
+
     public void setDtvw(int dtvw) {
         this.dtvw = dtvw;
     }
 
-    /**
-     * @return the sv
-     */
+
     public int getSv() {
         return sv;
     }
 
-    /**
-     * @param sv the sv to set
-     */
+
     public void setSv(int sv) {
         this.sv = sv;
     }
 
-    /**
-     * @return the baustelle
-     */
-    public String getBaustelle() {
-        return baustelle;
+    public String getAnmerkung() {
+        return anmerkung;
     }
 
-    /**
-     * @param baustelle the baustelle to set
-     */
-    public void setBaustelle(String baustelle) {
-        this.baustelle = baustelle;
+    public void setAnmerkung(String anmerkung) {
+        this.anmerkung = anmerkung;
+    }
+
+    public String getErhebung() {
+        return erhebung;
+    }
+
+    public void setErhebung(String erhebung) {
+        this.erhebung = erhebung;
+    }
+
+    @Override
+    public String toString() {
+        return "Datensatz [zaehlstelle=" + zaehlstelle + ", zstNr=" + zstNr + ", anmerkung=" + anmerkung + ", erhebung="
+                + erhebung + ", tensor=" + tensor + ", dtv=" + dtv + ", dtvw=" + dtvw + ", sv=" + sv + "]";
     }
 
 }

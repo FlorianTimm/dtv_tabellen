@@ -78,7 +78,7 @@ public class DataFormer extends JDialog {
 	@SuppressWarnings("deprecation")
 	private void umformen() {
 		data = new ArrayList<Map<Integer, Datensatz>>();
-		Set<Integer> ebenen = new HashSet<Integer>();
+		Set<Integer> tensoren = new HashSet<Integer>();
 
 		// Daten einlesen aus Quelldateien
 		for (int i = 0; dateien.size() > i; i++) {
@@ -99,98 +99,49 @@ public class DataFormer extends JDialog {
 						// jta.append(r.getCell(1).getStringCellValue()+"\n");
 						Datensatz ds = new Datensatz();
 
-						// Daten ohne Zählstellennummer
-						if (r.getCell(1) != null && r.getCell(0) != null
-								&& r.getCell(1).getCellTypeEnum() == CellType.STRING
-								&& r.getCell(0).getCellTypeEnum() == CellType.NUMERIC
-								&& r.getCell(0).getNumericCellValue() > 0) {
-							ds.setEbene((int) r.getCell(0).getNumericCellValue());
-
-							if (r.getCell(1) != null && r.getCell(1).getCellTypeEnum() == CellType.STRING) {
-								ds.setZaehlstelle(r.getCell(1).getStringCellValue());
-							} else {
-								ds.setZaehlstelle("");
-							}
-
-							if (r.getCell(2) != null && r.getCell(2).getCellTypeEnum() == CellType.NUMERIC) {
-								ds.setDtv((int) r.getCell(2).getNumericCellValue());
-							} else {
-								ds.setDtv(0);
-							}
-
-							if (r.getCell(3) != null && r.getCell(3).getCellTypeEnum() == CellType.NUMERIC) {
-								ds.setDtvw((int) r.getCell(3).getNumericCellValue());
-							} else {
-								ds.setDtvw(0);
-							}
-
-							if (r.getCell(4) != null && r.getCell(4).getCellTypeEnum() == CellType.NUMERIC) {
-								double sv = r.getCell(4).getNumericCellValue();
-								if (sv < 1. && sv > 0.) {
-									sv *= 100;
-								}
-								ds.setSv((int) Math.round(sv));
-							} else {
-								ds.setSv(0);
-							}
-
-							if (r.getCell(5) != null && r.getCell(5).getCellTypeEnum() == CellType.STRING) {
-								ds.setBaustelle(r.getCell(5).getStringCellValue());
-							} else {
-								ds.setBaustelle("");
-							}
-							dateiDS.put(ds.getEbene(), ds);
-							ebenen.add(ds.getEbene());
-						} else if (r.getCell(1) != null && r.getCell(2) != null
-								&& r.getCell(2).getCellTypeEnum() == CellType.STRING
-								&& r.getCell(1).getCellTypeEnum() == CellType.NUMERIC
-								&& r.getCell(1).getNumericCellValue() > 0) {
-
-							if (r.getCell(0) != null && r.getCell(0).getCellTypeEnum() == CellType.NUMERIC) {
-								ds.setZstNr((int) r.getCell(0).getNumericCellValue());
-							} else {
-								ds.setZstNr(0);
-							}
-
-							ds.setEbene((int) r.getCell(1).getNumericCellValue());
-
-							if (r.getCell(2) != null && r.getCell(2).getCellTypeEnum() == CellType.STRING) {
-								ds.setZaehlstelle(r.getCell(2).getStringCellValue());
-							} else {
-								ds.setZaehlstelle("");
-							}
-
-							if (r.getCell(3) != null && r.getCell(3).getCellTypeEnum() == CellType.NUMERIC) {
-								ds.setDtv((int) r.getCell(3).getNumericCellValue());
-							} else {
-								ds.setDtv(0);
-							}
-
-							if (r.getCell(4) != null && r.getCell(4).getCellTypeEnum() == CellType.NUMERIC) {
-								ds.setDtvw((int) r.getCell(4).getNumericCellValue());
-							} else {
-								ds.setDtvw(0);
-							}
-
-							// System.out.println(r.getCell(5).getNumericCellValue());
-							if (r.getCell(5) != null && r.getCell(5).getCellTypeEnum() == CellType.NUMERIC) {
-								double sv = r.getCell(5).getNumericCellValue();
-								if (sv < 1. && sv > 0.) {
-									sv *= 100;
-								}
-								ds.setSv((int) Math.round(sv));
-							} else {
-								ds.setSv(0);
-							}
-
-							if (r.getCell(6) != null && r.getCell(6).getCellTypeEnum() == CellType.STRING) {
-								ds.setBaustelle(r.getCell(6).getStringCellValue());
-							} else {
-								ds.setBaustelle("");
-							}
-							dateiDS.put(ds.getEbene(), ds);
-							ebenen.add(ds.getEbene());
+						if (r.getCell(2) != null && r.getCell(2).getCellTypeEnum() == CellType.NUMERIC) {
+							// Tensor
+							ds.setTensor((int) r.getCell(2).getNumericCellValue());
+						} else {
+							continue; // Zeile überspringen, wenn Tensor fehlt
 						}
+
+						if (r.getCell(1) != null && r.getCell(1).getCellTypeEnum() == CellType.STRING) {
+							// Zählstelle als String
+							ds.setZstNr(r.getCell(1).getStringCellValue());
+						}
+
+						if (r.getCell(3) != null && r.getCell(3).getCellTypeEnum() == CellType.STRING) {
+							ds.setZaehlstelle(r.getCell(3).getStringCellValue());
+						}
+
+						if (r.getCell(4) != null && r.getCell(4).getCellTypeEnum() == CellType.NUMERIC) {
+							ds.setDtv((int) r.getCell(4).getNumericCellValue());
+						}
+
+						if (r.getCell(5) != null && r.getCell(5).getCellTypeEnum() == CellType.NUMERIC) {
+							ds.setDtvw((int) r.getCell(5).getNumericCellValue());
+						}
+
+						if (r.getCell(6) != null && r.getCell(6).getCellTypeEnum() == CellType.NUMERIC) {
+							double sv = r.getCell(6).getNumericCellValue();
+							if (sv < 1. && sv > 0.) {
+								sv *= 100;
+							}
+							ds.setSv((int) Math.round(sv));
+						}
+
+						if (r.getCell(7) != null && r.getCell(7).getCellTypeEnum() == CellType.STRING) {
+							ds.setAnmerkung(r.getCell(7).getStringCellValue());
+						}
+
+						if (r.getCell(8) != null && r.getCell(8).getCellTypeEnum() == CellType.STRING) {
+							ds.setErhebung(r.getCell(8).getStringCellValue());
+						}
+
+						dateiDS.put(ds.getTensor(), ds);
+						tensoren.add(ds.getTensor());
+
 					}
 				}
 				jta.append(dateiDS.size() + " Zeilen eingelesen\n");
@@ -208,8 +159,8 @@ public class DataFormer extends JDialog {
 			data.add(dateiDS);
 		}
 
-		List<Integer> ebenenS = new ArrayList<Integer>(ebenen);
-		Collections.sort(ebenenS);
+		List<Integer> tensorenS = new ArrayList<Integer>(tensoren);
+		Collections.sort(tensorenS);
 
 		// ENDE: Daten einlesen
 
@@ -226,7 +177,7 @@ public class DataFormer extends JDialog {
 			// Überschriften schreiben
 			Row r1 = mensch.createRow(row++);
 			r1.createCell(0).setCellValue("Zählstelle");
-			r1.createCell(1).setCellValue("Ebene");
+			r1.createCell(1).setCellValue("Tensor");
 			r1.createCell(2).setCellValue("Bezeichnung");
 			r1.createCell(3).setCellValue("Kategorie");
 
@@ -237,9 +188,9 @@ public class DataFormer extends JDialog {
 
 			// Datenzeilen
 			int letzteDatei = dateien.size() - 1;
-			for (int i = 0; i < ebenenS.size(); i++) {
-				int ebene = ebenenS.get(i);
-				for (int k = 0; k < 4; k++) {
+			for (int i = 0; i < tensorenS.size(); i++) {
+				int ebene = tensorenS.get(i);
+				for (int k = 0; k < 5; k++) {
 					try {
 						Row r = mensch.createRow(row++);
 						int l = letzteDatei;
@@ -252,9 +203,7 @@ public class DataFormer extends JDialog {
 						}
 						Datensatz zst = data.get(l).get(ebene);
 						if (zst != null) {
-							if (zst.getZstNr() != 0) {
-								r.createCell(0).setCellValue(zst.getZstNr());
-							}
+							r.createCell(0).setCellValue(zst.getZstNr());
 							r.createCell(2).setCellValue(zst.getZaehlstelle());
 						}
 						r.createCell(1).setCellValue(ebene);
@@ -284,14 +233,22 @@ public class DataFormer extends JDialog {
 							}
 							break;
 						case 3:
-							r.createCell(3).setCellValue("Baustelleneinfluss");
+							r.createCell(3).setCellValue("Erhebungsmethode");
 							for (short j = 0; j < data.size(); j++) {
 								if (data.get(j).get(ebene) != null) {
-									r.createCell((short) j + 4).setCellValue(data.get(j).get(ebene).getBaustelle());
+									r.createCell((short) j + 4).setCellValue(data.get(j).get(ebene).getErhebung());
 								}
 							}
 							break;
-
+						// Anmerkung
+						case 4:
+							r.createCell(3).setCellValue("Anmerkung");
+							for (short j = 0; j < data.size(); j++) {
+								if (data.get(j).get(ebene) != null) {
+									r.createCell((short) j + 4).setCellValue(data.get(j).get(ebene).getAnmerkung());
+								}
+							}
+							break;
 						}
 
 					} catch (Exception e) {
@@ -307,18 +264,19 @@ public class DataFormer extends JDialog {
 
 			r1 = edv.createRow(row++);
 			r1.createCell(0).setCellValue("ZStNr");
-			r1.createCell(1).setCellValue("Ebene");
+			r1.createCell(1).setCellValue("Tensor");
 			r1.createCell(2).setCellValue("Zaehlstelle");
 
 			for (short j = 0; j < dateien.size(); j++) {
-				r1.createCell((short) j * 4 + 3).setCellValue(dateien.get(j).getName() + "_DTV");
-				r1.createCell((short) j * 4 + 4).setCellValue(dateien.get(j).getName() + "_DTVw");
-				r1.createCell((short) j * 4 + 5).setCellValue(dateien.get(j).getName() + "_SV_am_DTVw");
-				r1.createCell((short) j * 4 + 6).setCellValue(dateien.get(j).getName() + "_Baustelleneinfluss");
+				r1.createCell((short) j * 5 + 3).setCellValue(dateien.get(j).getName() + "_DTV");
+				r1.createCell((short) j * 5 + 4).setCellValue(dateien.get(j).getName() + "_DTVw");
+				r1.createCell((short) j * 5 + 5).setCellValue(dateien.get(j).getName() + "_SV_am_DTVw");
+				r1.createCell((short) j * 5 + 6).setCellValue(dateien.get(j).getName() + "_Erhebung");
+				r1.createCell((short) j * 5 + 7).setCellValue(dateien.get(j).getName() + "_Anmerkung");
 			}
 
-			for (int i = 0; i < ebenenS.size(); i++) {
-				int ebene = ebenenS.get(i);
+			for (int i = 0; i < tensorenS.size(); i++) {
+				int ebene = tensorenS.get(i);
 				Row r = edv.createRow(row++);
 
 				int l = letzteDatei;
@@ -331,29 +289,30 @@ public class DataFormer extends JDialog {
 				}
 				Datensatz zst = data.get(l).get(ebene);
 				if (zst != null) {
-					if (zst.getZstNr() != 0) {
+			
 						r.createCell(0).setCellValue(zst.getZstNr());
-					}
+					
 					r.createCell(2).setCellValue(zst.getZaehlstelle());
 				}
 				r.createCell(1).setCellValue(ebene);
 
 				for (short j = 0; j < dateien.size(); j++) {
 
-					if (data.get(j).get(ebene) != null && data.get(j).get(ebene).getDtv() > 0) {
-						r.createCell((short) j * 4 + 3).setCellValue(runden(data.get(j).get(ebene).getDtv()));
+					if (data.get(j).get(ebene) != null && data.get(j).get(ebene).getDtv() >= 0) {
+						r.createCell((short) j * 5 + 3).setCellValue(runden(data.get(j).get(ebene).getDtv()));
 					}
 
-					if (data.get(j).get(ebene) != null && data.get(j).get(ebene).getDtvw() > 0) {
-						r.createCell((short) j * 4 + 4).setCellValue(runden(data.get(j).get(ebene).getDtvw()));
+					if (data.get(j).get(ebene) != null && data.get(j).get(ebene).getDtvw() >= 0) {
+						r.createCell((short) j * 5 + 4).setCellValue(runden(data.get(j).get(ebene).getDtvw()));
 					}
 
-					if (data.get(j).get(ebene) != null && data.get(j).get(ebene).getSv() > 0) {
-						r.createCell((short) j * 4 + 5).setCellValue(data.get(j).get(ebene).getSv());
+					if (data.get(j).get(ebene) != null && data.get(j).get(ebene).getSv() >= 0) {
+						r.createCell((short) j *5 + 5).setCellValue(data.get(j).get(ebene).getSv());
 					}
 
 					if (data.get(j).get(ebene) != null) {
-						r.createCell((short) j * 4 + 6).setCellValue(data.get(j).get(ebene).getBaustelle());
+						r.createCell((short) j * 5 + 6).setCellValue(data.get(j).get(ebene).getErhebung());
+						r.createCell((short) j * 5 + 7).setCellValue(data.get(j).get(ebene).getAnmerkung());
 					}
 
 				}
