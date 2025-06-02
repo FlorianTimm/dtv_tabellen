@@ -182,61 +182,62 @@ public class DataFormer extends JDialog {
 			r1.createCell(3).setCellValue("Kategorie");
 
 			// weitere Überschriften für jedes Jahr
-			for (short j = 0; j < dateien.size(); j++) {
-				r1.createCell((short) j + 4).setCellValue(dateien.get(j).getName());
+			for (short jahrId = 0; jahrId < dateien.size(); jahrId++) {
+				r1.createCell((short) jahrId + 4).setCellValue(dateien.get(jahrId).getName());
 			}
 
 			// Datenzeilen
 			int letzteDatei = dateien.size() - 1;
-			for (int i = 0; i < tensorenS.size(); i++) {
-				int ebene = tensorenS.get(i);
-				for (int k = 0; k < 5; k++) {
+			for (int tensorRowId = 0; tensorRowId < tensorenS.size(); tensorRowId++) {
+				int tensor = tensorenS.get(tensorRowId);
+				for (int valueRowId = 0; valueRowId < 5; valueRowId++) {
 					try {
 						Row r = mensch.createRow(row++);
-						int l = letzteDatei;
-						while (data.get(l).get(ebene) == null) {
-							if (l > 0) {
-								l -= 1;
+						int dateiId = letzteDatei;
+						while (data.get(dateiId).get(tensor) == null) {
+							if (dateiId > 0) {
+								dateiId -= 1;
 							} else {
 								continue;
 							}
 						}
-						Datensatz zst = data.get(l).get(ebene);
-						if (zst != null) {
-							r.createCell(0).setCellValue(zst.getZstNr());
-							r.createCell(2).setCellValue(zst.getZaehlstelle());
-						}
-						r.createCell(1).setCellValue(ebene);
-						switch (k) {
+						Datensatz zst = data.get(dateiId).get(tensor);
+						r.createCell(0).setCellValue(zst.getZstNr());
+						r.createCell(2).setCellValue(zst.getZaehlstelle());
+						r.createCell(1).setCellValue(tensor);
+						switch (valueRowId) {
 						case 0:
 							r.createCell(3).setCellValue("DTV (Kfz/24h)");
-							for (short j = 0; j < data.size(); j++) {
-								if (data.get(j).get(ebene) != null && data.get(j).get(ebene).getDtv() > 0) {
-									r.createCell((short) j + 4).setCellValue(runden(data.get(j).get(ebene).getDtv()));
+							for (short jahrId = 0; jahrId < data.size(); jahrId++) {
+								if (data.get(jahrId).get(tensor) != null && data.get(jahrId).get(tensor).getDtv() > 0) {
+									r.createCell((short) jahrId + 4)
+											.setCellValue(runden(data.get(jahrId).get(tensor).getDtv()));
 								}
 							}
 							break;
 						case 1:
 							r.createCell(3).setCellValue("DTVw (Kfz/24h)");
-							for (short j = 0; j < data.size(); j++) {
-								if (data.get(j).get(ebene) != null && data.get(j).get(ebene).getDtvw() > 0) {
-									r.createCell((short) j + 4).setCellValue(runden(data.get(j).get(ebene).getDtvw()));
+							for (short jahrId = 0; jahrId < data.size(); jahrId++) {
+								if (data.get(jahrId).get(tensor) != null
+										&& data.get(jahrId).get(tensor).getDtvw() > 0) {
+									r.createCell((short) jahrId + 4)
+											.setCellValue(runden(data.get(jahrId).get(tensor).getDtvw()));
 								}
 							}
 							break;
 						case 2:
 							r.createCell(3).setCellValue("SV-Anteil am DTVw (%)");
 							for (short j = 0; j < data.size(); j++) {
-								if (data.get(j).get(ebene) != null && data.get(j).get(ebene).getSv() > 0) {
-									r.createCell((short) j + 4).setCellValue(data.get(j).get(ebene).getSv());
+								if (data.get(j).get(tensor) != null && data.get(j).get(tensor).getSv() > 0) {
+									r.createCell((short) j + 4).setCellValue(data.get(j).get(tensor).getSv());
 								}
 							}
 							break;
 						case 3:
 							r.createCell(3).setCellValue("Erhebungsmethode");
 							for (short j = 0; j < data.size(); j++) {
-								if (data.get(j).get(ebene) != null) {
-									r.createCell((short) j + 4).setCellValue(data.get(j).get(ebene).getErhebung());
+								if (data.get(j).get(tensor) != null) {
+									r.createCell((short) j + 4).setCellValue(data.get(j).get(tensor).getErhebung());
 								}
 							}
 							break;
@@ -244,8 +245,8 @@ public class DataFormer extends JDialog {
 						case 4:
 							r.createCell(3).setCellValue("Anmerkung");
 							for (short j = 0; j < data.size(); j++) {
-								if (data.get(j).get(ebene) != null) {
-									r.createCell((short) j + 4).setCellValue(data.get(j).get(ebene).getAnmerkung());
+								if (data.get(j).get(tensor) != null) {
+									r.createCell((short) j + 4).setCellValue(data.get(j).get(tensor).getAnmerkung());
 								}
 							}
 							break;
@@ -276,43 +277,41 @@ public class DataFormer extends JDialog {
 			}
 
 			for (int i = 0; i < tensorenS.size(); i++) {
-				int ebene = tensorenS.get(i);
+				int tensor = tensorenS.get(i);
 				Row r = edv.createRow(row++);
 
 				int l = letzteDatei;
-				while (data.get(l).get(ebene) == null) {
+				while (data.get(l).get(tensor) == null) {
 					if (l > 0) {
 						l -= 1;
 					} else {
 						continue;
 					}
 				}
-				Datensatz zst = data.get(l).get(ebene);
+				Datensatz zst = data.get(l).get(tensor);
 				if (zst != null) {
-			
-						r.createCell(0).setCellValue(zst.getZstNr());
-					
+					r.createCell(0).setCellValue(zst.getZstNr());
 					r.createCell(2).setCellValue(zst.getZaehlstelle());
 				}
-				r.createCell(1).setCellValue(ebene);
+				r.createCell(1).setCellValue(tensor);
 
 				for (short j = 0; j < dateien.size(); j++) {
 
-					if (data.get(j).get(ebene) != null && data.get(j).get(ebene).getDtv() >= 0) {
-						r.createCell((short) j * 5 + 3).setCellValue(runden(data.get(j).get(ebene).getDtv()));
+					if (data.get(j).get(tensor) != null && data.get(j).get(tensor).getDtv() >= 0) {
+						r.createCell((short) j * 5 + 3).setCellValue(runden(data.get(j).get(tensor).getDtv()));
 					}
 
-					if (data.get(j).get(ebene) != null && data.get(j).get(ebene).getDtvw() >= 0) {
-						r.createCell((short) j * 5 + 4).setCellValue(runden(data.get(j).get(ebene).getDtvw()));
+					if (data.get(j).get(tensor) != null && data.get(j).get(tensor).getDtvw() >= 0) {
+						r.createCell((short) j * 5 + 4).setCellValue(runden(data.get(j).get(tensor).getDtvw()));
 					}
 
-					if (data.get(j).get(ebene) != null && data.get(j).get(ebene).getSv() >= 0) {
-						r.createCell((short) j *5 + 5).setCellValue(data.get(j).get(ebene).getSv());
+					if (data.get(j).get(tensor) != null && data.get(j).get(tensor).getSv() >= 0) {
+						r.createCell((short) j * 5 + 5).setCellValue(data.get(j).get(tensor).getSv());
 					}
 
-					if (data.get(j).get(ebene) != null) {
-						r.createCell((short) j * 5 + 6).setCellValue(data.get(j).get(ebene).getErhebung());
-						r.createCell((short) j * 5 + 7).setCellValue(data.get(j).get(ebene).getAnmerkung());
+					if (data.get(j).get(tensor) != null) {
+						r.createCell((short) j * 5 + 6).setCellValue(data.get(j).get(tensor).getErhebung());
+						r.createCell((short) j * 5 + 7).setCellValue(data.get(j).get(tensor).getAnmerkung());
 					}
 
 				}
