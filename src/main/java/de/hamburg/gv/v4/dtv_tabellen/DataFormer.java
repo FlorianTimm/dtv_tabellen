@@ -43,8 +43,8 @@ public class DataFormer extends JDialog {
 	ArrayList<Datei> dateien;
 	ArrayList<Map<Integer, Datensatz>> data;
 	int runden;
-
 	Map<Integer, TensorID> translations;
+	Map<Integer, TensorID> namen;
 
 	/**
 	 * @param frame   Frame des Hauptfensters
@@ -77,6 +77,7 @@ public class DataFormer extends JDialog {
 		this.runden = runden;
 
 		translations = new HashMap<>();
+		namen = new HashMap<>();
 
 		// GUI
 		Container cp = this.getContentPane();
@@ -101,7 +102,9 @@ public class DataFormer extends JDialog {
 
 				int tensorCol = -1;
 				int tensorNeuCol = -1;
+				int zstNrCol = -1;
 				int zstNrNeuCol = -1;
+				int zstNameCol = -1;
 				int zstNameNeuCol = -1;
 
 				if (sh != null) {
@@ -117,8 +120,16 @@ public class DataFormer extends JDialog {
 									tensorNeuCol = col;
 								}
 
+								if ("zaehlstelle".equalsIgnoreCase(cellValue)) {
+									zstNrCol = col;
+								}
+
 								if ("zaehlstelle_neu".equalsIgnoreCase(cellValue)) {
 									zstNrNeuCol = col;
+								}
+
+								if ("bezeichnung".equalsIgnoreCase(cellValue)) {
+									zstNameCol = col;
 								}
 
 								if ("bezeichnung_neu".equalsIgnoreCase(cellValue)) {
@@ -128,10 +139,21 @@ public class DataFormer extends JDialog {
 						}
 					}
 				}
-				System.out.println("Tensor: " + tensorCol + ", Tensor_neu: " + tensorNeuCol + ", Zaehlstelle: "
-						+ ", Zaehlstelle_neu: " + zstNrNeuCol);
+				System.out.println("Tensor-Spalte: " + tensorCol);
+				System.out.println("Tensor_neu-Spalte: " + tensorNeuCol);
+				System.out.println("Zaehlstelle-Spalte: " + zstNrCol);
+				System.out.println("Zaehlstelle_neu-Spalte: " + zstNrNeuCol);
+				System.out.println("Bezeichnung-Spalte: " + zstNameCol);
+				System.out.println("Bezeichnung_neu-Spalte: " + zstNameNeuCol);
+				jta.append("Tensor-Spalte: " + tensorCol + "\n");
+				jta.append("Tensor_neu-Spalte: " + tensorNeuCol + "\n");
+				jta.append("Zaehlstelle-Spalte: " + zstNrCol + "\n");
+				jta.append("Zaehlstelle_neu-Spalte: " + zstNrNeuCol + "\n");
+				jta.append("Bezeichnung-Spalte: " + zstNameCol + "\n");
+				jta.append("Bezeichnung_neu-Spalte: " + zstNameNeuCol + "\n");
 
-				if (tensorCol == -1 || tensorNeuCol == -1 ||  zstNrNeuCol == -1 || zstNameNeuCol == -1) {
+				if (tensorCol == -1 || tensorNeuCol == -1 ||  zstNrCol == -1 ||  zstNrNeuCol == -1 || zstNameCol == -1 || zstNameNeuCol == -1) {
+					System.out.println("Fehler: Die Datei enthält nicht die korrekten Spalten!");
 					jta.append(
 							"Fehler: Die Datei enthält keine nicht die korrekten Spalten! [Tensor, Tensor_neu, Zaehlstelle_neu, Bezeichnung_neu]\n");
 					return;
@@ -144,7 +166,9 @@ public class DataFormer extends JDialog {
 
 						int tensorAlt = -1;
 						int tensorNeu = -1;
+						String zstNrAlt = "";
 						String zstNrNeu = "";
+						String zstNameAlt = "";
 						String zstNameNeu = "";
 						
 
@@ -162,9 +186,19 @@ public class DataFormer extends JDialog {
 							tensorNeu = (int) r.getCell(tensorNeuCol).getNumericCellValue();
 						}
 
+						if (r.getCell(zstNrCol) != null
+								&& r.getCell(zstNrCol).getCellTypeEnum() == CellType.STRING) {
+							zstNrAlt = r.getCell(zstNrCol).getStringCellValue();
+						}
+
 						if (r.getCell(zstNrNeuCol) != null
 								&& r.getCell(zstNrNeuCol).getCellTypeEnum() == CellType.STRING) {
 							zstNrNeu = r.getCell(zstNrNeuCol).getStringCellValue();
+						}
+
+						if (r.getCell(zstNameCol) != null
+								&& r.getCell(zstNameCol).getCellTypeEnum() == CellType.STRING) {
+							zstNameAlt = r.getCell(zstNameCol).getStringCellValue();
 						}
 
 						if (r.getCell(zstNameNeuCol) != null
@@ -174,6 +208,9 @@ public class DataFormer extends JDialog {
 
 						this.translations.put(tensorAlt,
 								new TensorID(tensorNeu, zstNrNeu, zstNameNeu));
+
+						this.namen.put(tensorNeu, new TensorID(tensorNeu, zstNrNeu, zstNameNeu));
+						this.namen.put(tensorAlt, new TensorID(tensorAlt, zstNrAlt, zstNameAlt));
 
 					}
 					jta.append("Anzahl Übersetzungen geladen: " + translations.size() + "\n");
@@ -262,7 +299,7 @@ public class DataFormer extends JDialog {
 
 							jta.append("Übersetzung: " + ds.getTensor() + " -> " + newTensor + "\n");
 							ds.setTensor(newTensor.getTensor());
-							ds.setZstNr(newTensor.getZstNr());
+							//ds.setZstNr(newTensor.getZstNr());
 							dateiDS.put(newTensor.getTensor(), ds);
 							tensoren.add(newTensor.getTensor());
 
@@ -333,11 +370,13 @@ public class DataFormer extends JDialog {
 						if (zst != null && !zst.getZstNr().equals("") && !zst.getZaehlstelle().equals("")) {
 							r.createCell(0).setCellValue(zst.getZstNr());
 							r.createCell(2).setCellValue(zst.getZaehlstelle());
-						} else if (translations.containsKey(tensor)) {
-							
+						} else if (this.namen.containsKey(tensor)) {
 							// Wenn Übersetzung vorhanden ist, nutze diese
-							r.createCell(0).setCellValue(translations.get(tensor).getZstNr());
-							r.createCell(2).setCellValue(translations.get(tensor).getName());
+							System.out.println("Übersetzung gefunden für Tensor: " + tensor);
+							r.createCell(0).setCellValue(namen.get(tensor).getZstNr());
+							r.createCell(2).setCellValue(namen.get(tensor).getName());
+
+							System.out.println("Nutzung von Übersetzung: " + namen.get(tensor));
 						} else {
 							int mpDataId = dateiId;
 							Datensatz tmpZst = zst;
@@ -348,8 +387,15 @@ public class DataFormer extends JDialog {
 								mpDataId -= 1;
 								tmpZst = data.get(mpDataId).get(tensor);
 							}
-							r.createCell(0).setCellValue(tmpZst.getZstNr());
-							r.createCell(2).setCellValue(tmpZst.getZaehlstelle());
+							if (tmpZst != null && !tmpZst.getZstNr().equals("")
+									&& !tmpZst.getZaehlstelle().equals("")) {
+								System.out.println("Nutzung von Zählstelle aus MP-Daten: " + tmpZst);
+								r.createCell(0).setCellValue(tmpZst.getZstNr());
+								r.createCell(2).setCellValue(tmpZst.getZaehlstelle());
+							} else {
+								System.out.println("Keine Zählstelle gefunden für Tensor: " + tensor);
+							}
+							
 						}
 
 						switch (valueRowId) {
@@ -429,19 +475,47 @@ public class DataFormer extends JDialog {
 				int tensor = tensorenS.get(i);
 				Row r = edv.createRow(row++);
 
-				int l = letzteDatei;
-				while (data.get(l).get(tensor) == null) {
-					if (l > 0) {
-						l -= 1;
+				int dateiId = letzteDatei;
+				while (data.get(dateiId).get(tensor) == null) {
+					if (dateiId > 0) {
+						dateiId -= 1;
 					} else {
 						continue;
 					}
 				}
-				Datensatz zst = data.get(l).get(tensor);
-				if (zst != null) {
+
+				Datensatz zst = data.get(dateiId).get(tensor);
+				if (zst != null && !zst.getZstNr().equals("") && !zst.getZaehlstelle().equals("")) {
 					r.createCell(0).setCellValue(zst.getZstNr());
 					r.createCell(2).setCellValue(zst.getZaehlstelle());
+				} else if (this.namen.containsKey(tensor)) {
+					// Wenn Übersetzung vorhanden ist, nutze diese
+					System.out.println("Übersetzung gefunden für Tensor: " + tensor);
+					r.createCell(0).setCellValue(namen.get(tensor).getZstNr());
+					r.createCell(2).setCellValue(namen.get(tensor).getName());
+
+					System.out.println("Nutzung von Übersetzung: " + namen.get(tensor));
+				} else {
+					int mpDataId = dateiId;
+					Datensatz tmpZst = zst;
+
+					while (mpDataId > 0 && (data.get(mpDataId).get(tensor) == null
+							|| data.get(mpDataId).get(tensor).getZstNr().equals("")
+							|| data.get(mpDataId).get(tensor).getZaehlstelle().equals(""))) {
+						mpDataId -= 1;
+						tmpZst = data.get(mpDataId).get(tensor);
+					}
+					if (tmpZst != null && !tmpZst.getZstNr().equals("")
+							&& !tmpZst.getZaehlstelle().equals("")) {
+						System.out.println("Nutzung von Zählstelle aus MP-Daten: " + tmpZst);
+						r.createCell(0).setCellValue(tmpZst.getZstNr());
+						r.createCell(2).setCellValue(tmpZst.getZaehlstelle());
+					} else {
+						System.out.println("Keine Zählstelle gefunden für Tensor: " + tensor);
+					}
+					
 				}
+
 				r.createCell(1).setCellValue(tensor);
 
 				for (short j = 0; j < dateien.size(); j++) {
