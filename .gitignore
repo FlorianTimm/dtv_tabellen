@@ -1,4 +1,20 @@
-*.jar
-*.zip
+# Maven
+target/
+
+# Ignore Gradle GUI config
+gradle-app.setting
+
+# Eclipse
+/.classpath
+/.settings/
+/.project
 /bin/
-/lib/
+
+# IntelliJ
+.idea
+*.iml
+*.ipr
+*.iws
+
+# Misc
+*.log

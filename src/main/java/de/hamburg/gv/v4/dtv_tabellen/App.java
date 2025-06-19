@@ -1,4 +1,4 @@
-package de.hamburg.gv.verkehrsdaten.dtvTabelle;
+package de.hamburg.gv.v4.dtv_tabellen;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
@@ -33,7 +33,7 @@ import javax.swing.table.TableCellEditor;
  * @author Stefanie Boese, BVM Hamburg
  * @version 2016.10.28
  */
-public class DTVTabelle extends JFrame implements ActionListener {
+public class App extends JFrame implements ActionListener {
 	private static final long serialVersionUID = 1L;
 
 	// Globale Variablen erzeugen
@@ -48,7 +48,7 @@ public class DTVTabelle extends JFrame implements ActionListener {
 	/**
 	 * Konstruktur GUI
 	 */
-	public DTVTabelle() {
+	public App() {
 		// Grundlegende Fenster-Einstellungen
 		super("DTV-Tabelle erzeugen");
 		dateien = new ArrayList<Datei>();
@@ -297,8 +297,8 @@ public class DTVTabelle extends JFrame implements ActionListener {
 		}
 	}
 
-	public static void main(String[] args) {
-		new DTVTabelle();
+	public static void main (String[] args) {
+		new App();
 
 	}
 

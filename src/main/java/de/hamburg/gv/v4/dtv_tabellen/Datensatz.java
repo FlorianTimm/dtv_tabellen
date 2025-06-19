@@ -1,4 +1,4 @@
-package de.hamburg.gv.verkehrsdaten.dtvTabelle;
+package de.hamburg.gv.v4.dtv_tabellen;
 
 /**
  * Datensatz-Klasse (eine Zählung einer Station)

@@ -1,4 +1,4 @@
-package de.hamburg.gv.verkehrsdaten.dtvTabelle;
+package de.hamburg.gv.v4.dtv_tabellen;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
