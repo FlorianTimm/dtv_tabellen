@@ -44,6 +44,21 @@ public class DataFormer extends JDialog {
 	ArrayList<Map<Integer, Datensatz>> data;
 	int runden;
 
+	Map<Integer, TensorID> translations;
+
+	/**
+	 * @param frame   Frame des Hauptfensters
+	 * @param datei   Datei, in die geschrieben werden soll
+	 * @param dateien Liste der einzulesenen Dateien
+	 * @param runden  Anzahl der 10er-Potenzen, auf die gerundet werden soll
+	 */
+	public DataFormer(Frame frame, File datei, ArrayList<Datei> dateien, int runden, File transFile) {
+		super(frame);
+		init(datei, dateien, runden);
+		this.loadTranslations(transFile);
+		umformen();
+	}
+
 	/**
 	 * @param frame   Frame des Hauptfensters
 	 * @param datei   Datei, in die geschrieben werden soll
@@ -52,9 +67,16 @@ public class DataFormer extends JDialog {
 	 */
 	public DataFormer(Frame frame, File datei, ArrayList<Datei> dateien, int runden) {
 		super(frame);
+		init(datei, dateien, runden);
+		umformen();
+	}
+
+	private void init(File datei, ArrayList<Datei> dateien, int runden) {
 		this.datei = datei;
 		this.dateien = dateien;
 		this.runden = runden;
+
+		translations = new HashMap<>();
 
 		// GUI
 		Container cp = this.getContentPane();
@@ -67,9 +89,102 @@ public class DataFormer extends JDialog {
 		this.setPreferredSize(new Dimension(400, 400));
 		this.pack();
 		this.setVisible(true);
+	}
 
-		// Datenprozess
-		umformen();
+	@SuppressWarnings("deprecation")
+	private void loadTranslations(File transFile) {
+		if (transFile != null && transFile.exists()) {
+			try {
+				Datei trans = new Datei(transFile);
+				Workbook wb = WorkbookFactory.create(transFile);
+				Sheet sh = wb.getSheet(trans.getBlatt());
+
+				int tensorCol = -1;
+				int tensorNeuCol = -1;
+				int zstNrNeuCol = -1;
+				int zstNameNeuCol = -1;
+
+				if (sh != null) {
+					Row headerRow = sh.getRow(0);
+					if (headerRow != null) {
+						for (int col = 0; col < headerRow.getLastCellNum(); col++) {
+							if (headerRow.getCell(col) != null) {
+								String cellValue = headerRow.getCell(col).getStringCellValue();
+								if ("tensor".equalsIgnoreCase(cellValue)) {
+									tensorCol = col;
+								}
+								if ("tensor_neu".equalsIgnoreCase(cellValue)) {
+									tensorNeuCol = col;
+								}
+
+								if ("zaehlstelle_neu".equalsIgnoreCase(cellValue)) {
+									zstNrNeuCol = col;
+								}
+
+								if ("bezeichnung_neu".equalsIgnoreCase(cellValue)) {
+									zstNameNeuCol = col;
+								}
+							}
+						}
+					}
+				}
+				System.out.println("Tensor: " + tensorCol + ", Tensor_neu: " + tensorNeuCol + ", Zaehlstelle: "
+						+ ", Zaehlstelle_neu: " + zstNrNeuCol);
+
+				if (tensorCol == -1 || tensorNeuCol == -1 ||  zstNrNeuCol == -1 || zstNameNeuCol == -1) {
+					jta.append(
+							"Fehler: Die Datei enthält keine nicht die korrekten Spalten! [Tensor, Tensor_neu, Zaehlstelle_neu, Bezeichnung_neu]\n");
+					return;
+				}
+
+				this.translations.clear();
+				if (sh != null) {
+					for (int i = 1; i <= sh.getLastRowNum(); i++) {
+						Row r = sh.getRow(i);
+
+						int tensorAlt = -1;
+						int tensorNeu = -1;
+						String zstNrNeu = "";
+						String zstNameNeu = "";
+						
+
+						if (r == null) {
+							continue; // Zeile überspringen, wenn leer
+						}
+
+						if (r.getCell(tensorCol) != null
+								&& r.getCell(tensorCol).getCellTypeEnum() == CellType.NUMERIC) {
+							tensorAlt = (int) r.getCell(tensorCol).getNumericCellValue();
+						}
+
+						if (r.getCell(tensorNeuCol) != null
+								&& r.getCell(tensorNeuCol).getCellTypeEnum() == CellType.NUMERIC) {
+							tensorNeu = (int) r.getCell(tensorNeuCol).getNumericCellValue();
+						}
+
+						if (r.getCell(zstNrNeuCol) != null
+								&& r.getCell(zstNrNeuCol).getCellTypeEnum() == CellType.STRING) {
+							zstNrNeu = r.getCell(zstNrNeuCol).getStringCellValue();
+						}
+
+						if (r.getCell(zstNameNeuCol) != null
+								&& r.getCell(zstNameNeuCol).getCellTypeEnum() == CellType.STRING) {
+							zstNameNeu = r.getCell(zstNameNeuCol).getStringCellValue();
+						}
+
+						this.translations.put(tensorAlt,
+								new TensorID(tensorNeu, zstNrNeu, zstNameNeu));
+
+					}
+					jta.append("Anzahl Übersetzungen geladen: " + translations.size() + "\n");
+				}
+
+			} catch (Exception e) {
+				e.printStackTrace();
+				this.jta.append("Fehler beim Lesen der Datei!\n" + e.getMessage() + "\n");
+			}
+
+		}
 	}
 
 	/**
@@ -142,6 +257,17 @@ public class DataFormer extends JDialog {
 						dateiDS.put(ds.getTensor(), ds);
 						tensoren.add(ds.getTensor());
 
+						if (translations.containsKey(ds.getTensor())) {
+							TensorID newTensor = translations.get(ds.getTensor());
+
+							jta.append("Übersetzung: " + ds.getTensor() + " -> " + newTensor + "\n");
+							ds.setTensor(newTensor.getTensor());
+							ds.setZstNr(newTensor.getZstNr());
+							dateiDS.put(newTensor.getTensor(), ds);
+							tensoren.add(newTensor.getTensor());
+
+						}
+
 					}
 				}
 				jta.append(dateiDS.size() + " Zeilen eingelesen\n");
@@ -201,55 +327,78 @@ public class DataFormer extends JDialog {
 								continue;
 							}
 						}
-						Datensatz zst = data.get(dateiId).get(tensor);
-						r.createCell(0).setCellValue(zst.getZstNr());
-						r.createCell(2).setCellValue(zst.getZaehlstelle());
+
 						r.createCell(1).setCellValue(tensor);
+						Datensatz zst = data.get(dateiId).get(tensor);
+						if (zst != null && !zst.getZstNr().equals("") && !zst.getZaehlstelle().equals("")) {
+							r.createCell(0).setCellValue(zst.getZstNr());
+							r.createCell(2).setCellValue(zst.getZaehlstelle());
+						} else if (translations.containsKey(tensor)) {
+							
+							// Wenn Übersetzung vorhanden ist, nutze diese
+							r.createCell(0).setCellValue(translations.get(tensor).getZstNr());
+							r.createCell(2).setCellValue(translations.get(tensor).getName());
+						} else {
+							int mpDataId = dateiId;
+							Datensatz tmpZst = zst;
+
+							while (mpDataId > 0 && (data.get(mpDataId).get(tensor) == null
+									|| data.get(mpDataId).get(tensor).getZstNr().equals("")
+									|| data.get(mpDataId).get(tensor).getZaehlstelle().equals(""))) {
+								mpDataId -= 1;
+								tmpZst = data.get(mpDataId).get(tensor);
+							}
+							r.createCell(0).setCellValue(tmpZst.getZstNr());
+							r.createCell(2).setCellValue(tmpZst.getZaehlstelle());
+						}
+
 						switch (valueRowId) {
-						case 0:
-							r.createCell(3).setCellValue("DTV (Kfz/24h)");
-							for (short jahrId = 0; jahrId < data.size(); jahrId++) {
-								if (data.get(jahrId).get(tensor) != null && data.get(jahrId).get(tensor).getDtv() > 0) {
-									r.createCell((short) jahrId + 4)
-											.setCellValue(runden(data.get(jahrId).get(tensor).getDtv()));
+							case 0:
+								r.createCell(3).setCellValue("DTV (Kfz/24h)");
+								for (short jahrId = 0; jahrId < data.size(); jahrId++) {
+									if (data.get(jahrId).get(tensor) != null
+											&& data.get(jahrId).get(tensor).getDtv() > 0) {
+										r.createCell((short) jahrId + 4)
+												.setCellValue(runden(data.get(jahrId).get(tensor).getDtv()));
+									}
 								}
-							}
-							break;
-						case 1:
-							r.createCell(3).setCellValue("DTVw (Kfz/24h)");
-							for (short jahrId = 0; jahrId < data.size(); jahrId++) {
-								if (data.get(jahrId).get(tensor) != null
-										&& data.get(jahrId).get(tensor).getDtvw() > 0) {
-									r.createCell((short) jahrId + 4)
-											.setCellValue(runden(data.get(jahrId).get(tensor).getDtvw()));
+								break;
+							case 1:
+								r.createCell(3).setCellValue("DTVw (Kfz/24h)");
+								for (short jahrId = 0; jahrId < data.size(); jahrId++) {
+									if (data.get(jahrId).get(tensor) != null
+											&& data.get(jahrId).get(tensor).getDtvw() > 0) {
+										r.createCell((short) jahrId + 4)
+												.setCellValue(runden(data.get(jahrId).get(tensor).getDtvw()));
+									}
 								}
-							}
-							break;
-						case 2:
-							r.createCell(3).setCellValue("SV-Anteil am DTVw (%)");
-							for (short j = 0; j < data.size(); j++) {
-								if (data.get(j).get(tensor) != null && data.get(j).get(tensor).getSv() > 0) {
-									r.createCell((short) j + 4).setCellValue(data.get(j).get(tensor).getSv());
+								break;
+							case 2:
+								r.createCell(3).setCellValue("SV-Anteil am DTVw (%)");
+								for (short j = 0; j < data.size(); j++) {
+									if (data.get(j).get(tensor) != null && data.get(j).get(tensor).getSv() > 0) {
+										r.createCell((short) j + 4).setCellValue(data.get(j).get(tensor).getSv());
+									}
 								}
-							}
-							break;
-						case 3:
-							r.createCell(3).setCellValue("Erhebungsmethode");
-							for (short j = 0; j < data.size(); j++) {
-								if (data.get(j).get(tensor) != null) {
-									r.createCell((short) j + 4).setCellValue(data.get(j).get(tensor).getErhebung());
+								break;
+							case 3:
+								r.createCell(3).setCellValue("Erhebungsmethode");
+								for (short j = 0; j < data.size(); j++) {
+									if (data.get(j).get(tensor) != null) {
+										r.createCell((short) j + 4).setCellValue(data.get(j).get(tensor).getErhebung());
+									}
 								}
-							}
-							break;
-						// Anmerkung
-						case 4:
-							r.createCell(3).setCellValue("Anmerkung");
-							for (short j = 0; j < data.size(); j++) {
-								if (data.get(j).get(tensor) != null) {
-									r.createCell((short) j + 4).setCellValue(data.get(j).get(tensor).getAnmerkung());
+								break;
+							// Anmerkung
+							case 4:
+								r.createCell(3).setCellValue("Anmerkung");
+								for (short j = 0; j < data.size(); j++) {
+									if (data.get(j).get(tensor) != null) {
+										r.createCell((short) j + 4)
+												.setCellValue(data.get(j).get(tensor).getAnmerkung());
+									}
 								}
-							}
-							break;
+								break;
 						}
 
 					} catch (Exception e) {

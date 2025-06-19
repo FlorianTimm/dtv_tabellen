@@ -15,6 +15,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JTextField;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -44,6 +45,7 @@ public class App extends JFrame implements ActionListener {
 	JTable table;
 	JComboBox<String> jcbRunden;
 	JCheckBox cbRunden;
+	JTextField transTablePath;
 
 	/**
 	 * Konstruktur GUI
@@ -56,11 +58,27 @@ public class App extends JFrame implements ActionListener {
 		Container cp = this.getContentPane();
 		cp.setLayout(new BorderLayout());
 
+		JPanel oben = new JPanel();
+		oben.setLayout(new BorderLayout());
+		cp.add(oben, BorderLayout.NORTH);
+
+		this.transTablePath = new JTextField();
+		this.transTablePath.setEditable(false);
+		this.transTablePath.setText("(keine Übersetzungstabelle)");
+		this.transTablePath.setHorizontalAlignment(JTextField.CENTER);
+		oben.add(this.transTablePath, BorderLayout.CENTER);
+
+		JButton transTableButton = new JButton("auswählen...");
+		transTableButton.setActionCommand("transTable");
+		transTableButton.addActionListener(this);
+		// Button zum Speichern der Tabelle
+		oben.add(transTableButton, BorderLayout.EAST);
+
 		// Laden-Button
-		JButton laden = new JButton("Datensatz laden");
+		JButton laden = new JButton("Datensätze laden...");
 		laden.setActionCommand("laden");
 		laden.addActionListener(this);
-		cp.add(laden, BorderLayout.NORTH);
+		oben.add(laden, BorderLayout.SOUTH);
 
 		// Tabelle erzeugen
 		table = new JTable() {
@@ -126,7 +144,7 @@ public class App extends JFrame implements ActionListener {
 		sueden.add(jcbRunden, BorderLayout.CENTER);
 
 		// Speichern-Button
-		JButton speichern = new JButton("Speichern und Umformen");
+		JButton speichern = new JButton("Speichern und Umformen...");
 		speichern.setActionCommand("speichern");
 		speichern.addActionListener(this);
 		sueden.add(speichern, BorderLayout.SOUTH);
@@ -148,26 +166,29 @@ public class App extends JFrame implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent ae) {
 		switch (ae.getActionCommand()) {
-		case "laden":
-			laden();
-			break;
-		case "speichern":
-			speichern();
-			break;
-		case "hoch":
-			hoch();
-			break;
-		case "runter":
-			runter();
-			break;
-		case "entf":
-			entf();
-			break;
+			case "laden":
+				laden();
+				break;
+			case "speichern":
+				speichern();
+				break;
+			case "hoch":
+				hoch();
+				break;
+			case "runter":
+				runter();
+				break;
+			case "entf":
+				entf();
+				break;
+			case "transTable":
+				transTable();
+				break;
 
-		case "Lizenzbedingungen":
-			String txt = "Programmiert von Florian Timm, LGV (2016)\n\nSoftware verwendet:\nApache POI\nCopyright 2003-2016 The Apache Software Foundation\n\nThis product includes software developed by\nThe Apache Software Foundation (https://www.apache.org/).\n\nThis product contains parts that were originally based on software from BEA.\nCopyright (c) 2000-2003, BEA Systems, <http://www.bea.com/>.\n\nThis product contains W3C XML Schema documents. Copyright 2001-2003 (c)\nWorld Wide Web Consortium (Massachusetts Institute of Technology, European\nResearch Consortium for Informatics and Mathematics, Keio University)\n\nThis product contains the Piccolo XML Parser for Java\n(http://piccolo.sourceforge.net/). Copyright 2002 Yuval Oren.\n\nThis product contains the chunks_parse_cmds.tbl file from the vsdump program.\nCopyright (C) 2006-2007 Valek Filippov (frob@df.ru)\n\nThis product contains parts of the eID Applet project \n(http://eid-applet.googlecode.com). Copyright (c) 2009-2014\nFedICT (federal ICT department of Belgium), e-Contract.be BVBA (https://www.e-contract.be),\nBart Hanssens from FedICT\n";
-			JOptionPane.showMessageDialog(null, txt);
-			break;
+			case "Lizenzbedingungen...":
+				String txt = "Programmiert von Florian Timm, LGV (2025)\n\nSoftware verwendet:\nApache POI\nCopyright 2003-2016 The Apache Software Foundation\n\nThis product includes software developed by\nThe Apache Software Foundation (https://www.apache.org/).\n\nThis product contains parts that were originally based on software from BEA.\nCopyright (c) 2000-2003, BEA Systems, <http://www.bea.com/>.\n\nThis product contains W3C XML Schema documents. Copyright 2001-2003 (c)\nWorld Wide Web Consortium (Massachusetts Institute of Technology, European\nResearch Consortium for Informatics and Mathematics, Keio University)\n\nThis product contains the Piccolo XML Parser for Java\n(http://piccolo.sourceforge.net/). Copyright 2002 Yuval Oren.\n\nThis product contains the chunks_parse_cmds.tbl file from the vsdump program.\nCopyright (C) 2006-2007 Valek Filippov (frob@df.ru)\n\nThis product contains parts of the eID Applet project \n(http://eid-applet.googlecode.com). Copyright (c) 2009-2014\nFedICT (federal ICT department of Belgium), e-Contract.be BVBA (https://www.e-contract.be),\nBart Hanssens from FedICT\n";
+				JOptionPane.showMessageDialog(null, txt);
+				break;
 		}
 	}
 
@@ -240,8 +261,19 @@ public class App extends JFrame implements ActionListener {
 					runden = jcbRunden.getSelectedIndex() + 1;
 				}
 
-				// Exportklasse anstarten
-				new DataFormer(this, datei, dateien, runden);
+				if (transTablePath.getText().equals("(keine Übersetzungstabelle)")) {
+					// Exportklasse anstarten
+					new DataFormer(this, datei, dateien, runden);
+				} else {
+					File transTable = new File(transTablePath.getText());
+					if (transTable.exists()) {
+						// Exportklasse anstarten
+						new DataFormer(this, datei, dateien, runden, transTable);
+					} else {
+						JOptionPane.showMessageDialog(null, "Übersetzungstabelle nicht gefunden!");
+					}
+				}
+
 			}
 		} else {
 			// Fehlermeldung falls keine Datei geladen war
@@ -297,7 +329,22 @@ public class App extends JFrame implements ActionListener {
 		}
 	}
 
-	public static void main (String[] args) {
+	private void transTable() {
+		JFileChooser jfc = new JFileChooser("G:\\AG_Verkehrsdaten\\Projekte\\DTV-Tabelle\\Übersetzungstabellen");
+		FileNameExtensionFilter filter = new FileNameExtensionFilter("Excel-Tabellen", "xls", "xlsx");
+		jfc.setFileFilter(filter);
+		jfc.setAcceptAllFileFilterUsed(false);
+		int ok = jfc.showOpenDialog(this);
+
+		if (ok == JFileChooser.APPROVE_OPTION) {
+			File datei = jfc.getSelectedFile();
+			if (datei != null) {
+				this.transTablePath.setText(datei.getAbsolutePath());
+			}
+		}
+	}
+
+	public static void main(String[] args) {
 		new App();
 
 	}

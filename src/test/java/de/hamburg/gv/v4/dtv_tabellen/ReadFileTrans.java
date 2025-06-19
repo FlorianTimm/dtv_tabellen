@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 import javax.swing.JFrame;
 
-public class ReadFile {
+public class ReadFileTrans {
 
     private static File file;
 
@@ -36,7 +36,9 @@ public class ReadFile {
 
         JFrame frame = new JFrame();
 
-        new DataFormer(frame, file, dateien, 3);
+        File transFile = new File("src/test/resources/config_Verschobene_Pegel_2024.xlsx");
+
+        new DataFormer(frame, file, dateien, 3, transFile);
 
     }
 
@@ -49,5 +51,4 @@ public class ReadFile {
     public void fileIsNotEmpty() {
         assertTrue(file.length() > 0, "Die Datei ist leer: " + file.getAbsolutePath());
     }
-
 }
