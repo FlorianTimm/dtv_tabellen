@@ -44,20 +44,9 @@ public class DataFormer extends JDialog {
 	ArrayList<Map<Integer, Datensatz>> data;
 	int runden;
 	Map<Integer, TensorID> translations;
+	Map<String, String> erhebungsMethoden;
+	Map<String, String> anmerkungen;
 	Map<Integer, TensorID> namen;
-
-	/**
-	 * @param frame   Frame des Hauptfensters
-	 * @param datei   Datei, in die geschrieben werden soll
-	 * @param dateien Liste der einzulesenen Dateien
-	 * @param runden  Anzahl der 10er-Potenzen, auf die gerundet werden soll
-	 */
-	public DataFormer(Frame frame, File datei, ArrayList<Datei> dateien, int runden, File transFile) {
-		super(frame);
-		init(datei, dateien, runden);
-		this.loadTranslations(transFile);
-		umformen();
-	}
 
 	/**
 	 * @param frame   Frame des Hauptfensters
@@ -67,17 +56,15 @@ public class DataFormer extends JDialog {
 	 */
 	public DataFormer(Frame frame, File datei, ArrayList<Datei> dateien, int runden) {
 		super(frame);
-		init(datei, dateien, runden);
-		umformen();
-	}
 
-	private void init(File datei, ArrayList<Datei> dateien, int runden) {
 		this.datei = datei;
 		this.dateien = dateien;
 		this.runden = runden;
 
 		translations = new HashMap<>();
 		namen = new HashMap<>();
+		erhebungsMethoden = new HashMap<>();
+		anmerkungen = new HashMap<>();
 
 		// GUI
 		Container cp = this.getContentPane();
@@ -93,7 +80,7 @@ public class DataFormer extends JDialog {
 	}
 
 	@SuppressWarnings("deprecation")
-	private void loadTranslations(File transFile) {
+	public void setTransFile(File transFile) {
 		if (transFile != null && transFile.exists()) {
 			try {
 				Datei trans = new Datei(transFile);
@@ -139,20 +126,9 @@ public class DataFormer extends JDialog {
 						}
 					}
 				}
-				System.out.println("Tensor-Spalte: " + tensorCol);
-				System.out.println("Tensor_neu-Spalte: " + tensorNeuCol);
-				System.out.println("Zaehlstelle-Spalte: " + zstNrCol);
-				System.out.println("Zaehlstelle_neu-Spalte: " + zstNrNeuCol);
-				System.out.println("Bezeichnung-Spalte: " + zstNameCol);
-				System.out.println("Bezeichnung_neu-Spalte: " + zstNameNeuCol);
-				jta.append("Tensor-Spalte: " + tensorCol + "\n");
-				jta.append("Tensor_neu-Spalte: " + tensorNeuCol + "\n");
-				jta.append("Zaehlstelle-Spalte: " + zstNrCol + "\n");
-				jta.append("Zaehlstelle_neu-Spalte: " + zstNrNeuCol + "\n");
-				jta.append("Bezeichnung-Spalte: " + zstNameCol + "\n");
-				jta.append("Bezeichnung_neu-Spalte: " + zstNameNeuCol + "\n");
 
-				if (tensorCol == -1 || tensorNeuCol == -1 ||  zstNrCol == -1 ||  zstNrNeuCol == -1 || zstNameCol == -1 || zstNameNeuCol == -1) {
+				if (tensorCol == -1 || tensorNeuCol == -1 || zstNrCol == -1 || zstNrNeuCol == -1 || zstNameCol == -1
+						|| zstNameNeuCol == -1) {
 					System.out.println("Fehler: Die Datei enthält nicht die korrekten Spalten!");
 					jta.append(
 							"Fehler: Die Datei enthält keine nicht die korrekten Spalten! [Tensor, Tensor_neu, Zaehlstelle_neu, Bezeichnung_neu]\n");
@@ -170,7 +146,6 @@ public class DataFormer extends JDialog {
 						String zstNrNeu = "";
 						String zstNameAlt = "";
 						String zstNameNeu = "";
-						
 
 						if (r == null) {
 							continue; // Zeile überspringen, wenn leer
@@ -224,11 +199,159 @@ public class DataFormer extends JDialog {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
+	public void setErhebungFile(File erfassungFile) {
+		if (erfassungFile != null && erfassungFile.exists()) {
+			try {
+				Datei trans = new Datei(erfassungFile);
+				Workbook wb = WorkbookFactory.create(erfassungFile);
+				Sheet sh = wb.getSheet(trans.getBlatt());
+
+				int abkCol = -1;
+				int wertCol = -1;
+
+				if (sh != null) {
+					Row headerRow = sh.getRow(0);
+					if (headerRow != null) {
+						for (int col = 0; col < headerRow.getLastCellNum(); col++) {
+							if (headerRow.getCell(col) != null) {
+								String cellValue = headerRow.getCell(col).getStringCellValue();
+								if ("erhebungsmethode".equalsIgnoreCase(cellValue)) {
+									abkCol = col;
+								}
+								if ("text".equalsIgnoreCase(cellValue)) {
+									wertCol = col;
+								}
+							}
+						}
+					}
+				}
+
+				if (abkCol == -1 || wertCol == -1) {
+					System.out.println("Fehler: Die Datei enthält nicht die korrekten Spalten!");
+					jta.append(
+							"Fehler: Die Datei enthält keine nicht die korrekten Spalten! []\n");
+					return;
+				}
+
+				this.erhebungsMethoden.clear();
+				if (sh != null) {
+					for (int i = 1; i <= sh.getLastRowNum(); i++) {
+						Row r = sh.getRow(i);
+
+						String abk = "";
+						String wert = "";
+
+						if (r == null) {
+							continue; // Zeile überspringen, wenn leer
+						}
+
+						if (r.getCell(abkCol) != null
+								&& r.getCell(abkCol).getCellTypeEnum() == CellType.STRING) {
+							abk = r.getCell(abkCol).getStringCellValue();
+						}
+
+						if (r.getCell(wertCol) != null
+								&& r.getCell(wertCol).getCellTypeEnum() == CellType.STRING) {
+							wert = r.getCell(wertCol).getStringCellValue();
+						}
+
+						if (wert.equals("<löschen>")) {
+							wert = "";
+						}
+
+						this.erhebungsMethoden.put(abk, wert);
+					}
+					jta.append("Anzahl Erhebungsmethoden geladen: " + erhebungsMethoden.size() + "\n");
+				}
+
+			} catch (Exception e) {
+				e.printStackTrace();
+				this.jta.append("Fehler beim Lesen der Datei!\n" + e.getMessage() + "\n");
+			}
+
+		}
+	}
+
+	@SuppressWarnings("deprecation")
+	public void setAnmerkungFile(File anmerkungFile) {
+		if (anmerkungFile != null && anmerkungFile.exists()) {
+			try {
+				Datei trans = new Datei(anmerkungFile);
+				Workbook wb = WorkbookFactory.create(anmerkungFile);
+				Sheet sh = wb.getSheet(trans.getBlatt());
+
+				int abkCol = -1;
+				int wertCol = -1;
+
+				if (sh != null) {
+					Row headerRow = sh.getRow(0);
+					if (headerRow != null) {
+						for (int col = 0; col < headerRow.getLastCellNum(); col++) {
+							if (headerRow.getCell(col) != null) {
+								String cellValue = headerRow.getCell(col).getStringCellValue();
+								if ("anmerkung".equalsIgnoreCase(cellValue)) {
+									abkCol = col;
+								}
+								if ("text".equalsIgnoreCase(cellValue)) {
+									wertCol = col;
+								}
+							}
+						}
+					}
+				}
+
+				if (abkCol == -1 || wertCol == -1) {
+					System.out.println("Fehler: Die Datei enthält nicht die korrekten Spalten!");
+					jta.append(
+							"Fehler: Die Datei enthält keine nicht die korrekten Spalten! []\n");
+					return;
+				}
+
+				this.anmerkungen.clear();
+				if (sh != null) {
+					for (int i = 1; i <= sh.getLastRowNum(); i++) {
+						Row r = sh.getRow(i);
+
+						String abk = "";
+						String wert = "";
+
+						if (r == null) {
+							continue; // Zeile überspringen, wenn leer
+						}
+
+						if (r.getCell(abkCol) != null
+								&& r.getCell(abkCol).getCellTypeEnum() == CellType.STRING) {
+							abk = r.getCell(abkCol).getStringCellValue();
+						}
+
+						if (r.getCell(wertCol) != null
+								&& r.getCell(wertCol).getCellTypeEnum() == CellType.STRING) {
+							wert = r.getCell(wertCol).getStringCellValue();
+						}
+
+						if (wert.equals("<löschen>")) {
+							wert = "";
+						}
+
+						this.anmerkungen.put(abk, wert);
+					}
+					jta.append("Anzahl Anmerkungen geladen: " + anmerkungen.size() + "\n");
+				}
+
+			} catch (Exception e) {
+				e.printStackTrace();
+				this.jta.append("Fehler beim Lesen der Datei!\n" + e.getMessage() + "\n");
+			}
+
+		}
+	}
+
 	/**
 	 * Export starten
 	 */
 	@SuppressWarnings("deprecation")
-	private void umformen() {
+	public void start() {
 		data = new ArrayList<Map<Integer, Datensatz>>();
 		Set<Integer> tensoren = new HashSet<Integer>();
 
@@ -261,6 +384,10 @@ public class DataFormer extends JDialog {
 						if (r.getCell(1) != null && r.getCell(1).getCellTypeEnum() == CellType.STRING) {
 							// Zählstelle als String
 							ds.setZstNr(r.getCell(1).getStringCellValue());
+						} else if (r.getCell(1) != null
+								&& r.getCell(1).getCellTypeEnum() == CellType.NUMERIC) {
+							// Zählstelle als Zahl
+							ds.setZstNr(String.valueOf((int) r.getCell(1).getNumericCellValue()));
 						}
 
 						if (r.getCell(3) != null && r.getCell(3).getCellTypeEnum() == CellType.STRING) {
@@ -284,26 +411,23 @@ public class DataFormer extends JDialog {
 						}
 
 						if (r.getCell(7) != null && r.getCell(7).getCellTypeEnum() == CellType.STRING) {
-							ds.setAnmerkung(r.getCell(7).getStringCellValue());
+							ds.setAnmerkung(r.getCell(7).getStringCellValue(), anmerkungen);
 						}
 
 						if (r.getCell(8) != null && r.getCell(8).getCellTypeEnum() == CellType.STRING) {
-							ds.setErhebung(r.getCell(8).getStringCellValue());
+							ds.setErhebung(r.getCell(8).getStringCellValue(), erhebungsMethoden);
 						}
-
-						dateiDS.put(ds.getTensor(), ds);
-						tensoren.add(ds.getTensor());
 
 						if (translations.containsKey(ds.getTensor())) {
 							TensorID newTensor = translations.get(ds.getTensor());
-
 							jta.append("Übersetzung: " + ds.getTensor() + " -> " + newTensor + "\n");
 							ds.setTensor(newTensor.getTensor());
-							//ds.setZstNr(newTensor.getZstNr());
-							dateiDS.put(newTensor.getTensor(), ds);
-							tensoren.add(newTensor.getTensor());
-
+							ds.setZstNr(newTensor.getZstNr());
 						}
+						System.out.println("Tensor: " + ds.getTensor() + " " + ds.getZstNr() + " "
+								+ ds.getZaehlstelle());
+						dateiDS.put(ds.getTensor(), ds);
+						tensoren.add(ds.getTensor());
 
 					}
 				}
@@ -379,7 +503,7 @@ public class DataFormer extends JDialog {
 							System.out.println("Nutzung von Übersetzung: " + namen.get(tensor));
 						} else {
 							int mpDataId = dateiId;
-							Datensatz tmpZst = zst;
+							Datensatz tmpZst = zst.copy();
 
 							while (mpDataId > 0 && (data.get(mpDataId).get(tensor) == null
 									|| data.get(mpDataId).get(tensor).getZstNr().equals("")
@@ -395,7 +519,7 @@ public class DataFormer extends JDialog {
 							} else {
 								System.out.println("Keine Zählstelle gefunden für Tensor: " + tensor);
 							}
-							
+
 						}
 
 						switch (valueRowId) {
@@ -513,7 +637,7 @@ public class DataFormer extends JDialog {
 					} else {
 						System.out.println("Keine Zählstelle gefunden für Tensor: " + tensor);
 					}
-					
+
 				}
 
 				r.createCell(1).setCellValue(tensor);

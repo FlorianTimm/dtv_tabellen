@@ -36,10 +36,16 @@ public class ReadFileTrans {
 
         JFrame frame = new JFrame();
 
-        File transFile = new File("src/test/resources/config_Verschobene_Pegel_2024.xlsx");
+        File transFile = new File("src/test/resources/config_Verschobene_Pegel.xlsx");
+        File erhebungFile = new File("src/test/resources/config_Erhebungsmethode.xlsx");
+        File anmerkungFile = new File("src/test/resources/config_Anmerkungen.xlsx");
 
-        new DataFormer(frame, file, dateien, 3, transFile);
 
+        DataFormer df = new DataFormer(frame, file, dateien, 3);
+        df.setTransFile(transFile);
+        df.setErhebungFile(erhebungFile);
+        df.setAnmerkungFile(anmerkungFile);
+        df.start();
     }
 
     @Test

@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 
-
 /**
  * Unit test for simple App.
  */

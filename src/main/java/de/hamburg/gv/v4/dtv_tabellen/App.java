@@ -10,12 +10,14 @@ import java.io.File;
 import java.util.ArrayList;
 
 import javax.swing.DefaultCellEditor;
+import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JTextField;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -46,6 +48,8 @@ public class App extends JFrame implements ActionListener {
 	JComboBox<String> jcbRunden;
 	JCheckBox cbRunden;
 	JTextField transTablePath;
+	JTextField erhebungsMethodenPath;
+	JTextField anmerkungenPath;
 
 	/**
 	 * Konstruktur GUI
@@ -59,26 +63,85 @@ public class App extends JFrame implements ActionListener {
 		cp.setLayout(new BorderLayout());
 
 		JPanel oben = new JPanel();
-		oben.setLayout(new BorderLayout());
 		cp.add(oben, BorderLayout.NORTH);
+
+		GroupLayout layout = new GroupLayout(oben);
+		oben.setLayout(layout);
+
+		JLabel transTableLabel = new JLabel("Verschobene Pegel: ");
 
 		this.transTablePath = new JTextField();
 		this.transTablePath.setEditable(false);
-		this.transTablePath.setText("(keine Übersetzungstabelle)");
+		this.transTablePath.setText("(keine Tabelle gewählt)");
 		this.transTablePath.setHorizontalAlignment(JTextField.CENTER);
-		oben.add(this.transTablePath, BorderLayout.CENTER);
 
 		JButton transTableButton = new JButton("auswählen...");
 		transTableButton.setActionCommand("transTable");
 		transTableButton.addActionListener(this);
 		// Button zum Speichern der Tabelle
-		oben.add(transTableButton, BorderLayout.EAST);
+
+		JLabel erhebungsMethodenLabel = new JLabel("Erhebungsmethoden: ");
+
+		this.erhebungsMethodenPath = new JTextField();
+		this.erhebungsMethodenPath.setEditable(false);
+		this.erhebungsMethodenPath.setText("(keine Tabelle gewählt)");
+		this.erhebungsMethodenPath.setHorizontalAlignment(JTextField.CENTER);
+
+		JButton erhebungsMethodenButton = new JButton("auswählen...");
+		erhebungsMethodenButton.setActionCommand("erhebungsMethodenTable");
+		erhebungsMethodenButton.addActionListener(this);
+		// Button zum Speichern der Tabelle
+
+		JLabel anmerkungenLabel = new JLabel("Anmerkungen: ");
+
+		this.anmerkungenPath = new JTextField();
+		this.anmerkungenPath.setEditable(false);
+		this.anmerkungenPath.setText("(keine Tabelle gewählt)");
+		this.anmerkungenPath.setHorizontalAlignment(JTextField.CENTER);
+
+		JButton anmerkungenButton = new JButton("auswählen...");
+		anmerkungenButton.setActionCommand("anmerkungenTable");
+		anmerkungenButton.addActionListener(this);
+		// Button zum Speichern der Tabelle
 
 		// Laden-Button
 		JButton laden = new JButton("Datensätze laden...");
 		laden.setActionCommand("laden");
 		laden.addActionListener(this);
-		oben.add(laden, BorderLayout.SOUTH);
+
+		layout.setAutoCreateGaps(true);
+		layout.setAutoCreateContainerGaps(true);
+
+		layout.setHorizontalGroup(layout.createSequentialGroup()
+				.addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+						.addComponent(transTableLabel)
+						.addComponent(erhebungsMethodenLabel)
+						.addComponent(anmerkungenLabel))
+				.addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+						.addComponent(transTablePath)
+						.addComponent(erhebungsMethodenPath)
+						.addComponent(anmerkungenPath)
+						.addComponent(laden))
+				.addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+						.addComponent(transTableButton)
+						.addComponent(erhebungsMethodenButton)
+						.addComponent(anmerkungenButton)));
+
+		// Vertikale Anordnung der Elemente
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+						.addComponent(transTableLabel)
+						.addComponent(transTablePath)
+						.addComponent(transTableButton))
+				.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+						.addComponent(erhebungsMethodenLabel)
+						.addComponent(erhebungsMethodenPath)
+						.addComponent(erhebungsMethodenButton))
+				.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+						.addComponent(anmerkungenLabel)
+						.addComponent(anmerkungenPath)
+						.addComponent(anmerkungenButton))
+				.addComponent(laden));
 
 		// Tabelle erzeugen
 		table = new JTable() {
@@ -135,7 +198,7 @@ public class App extends JFrame implements ActionListener {
 
 		// Rundungseinstellungen
 		cbRunden = new JCheckBox("Daten runden");
-		cbRunden.setSelected(true);
+		cbRunden.setSelected(false);
 		sueden.add(cbRunden, BorderLayout.WEST);
 		String[] jcbS = { "auf 1 Stelle  (123460)", "auf 2 Stellen (123500)", "auf 3 Stellen (123000)",
 				"auf 4 Stellen (120000)" };
@@ -184,7 +247,12 @@ public class App extends JFrame implements ActionListener {
 			case "transTable":
 				transTable();
 				break;
-
+			case "erhebungsMethodenTable":
+				erhebungsMethodenTable();
+				break;
+			case "anmerkungenTable":
+				anmerkungenTable();
+				break;
 			case "Lizenzbedingungen...":
 				String txt = "Programmiert von Florian Timm, LGV (2025)\n\nSoftware verwendet:\nApache POI\nCopyright 2003-2016 The Apache Software Foundation\n\nThis product includes software developed by\nThe Apache Software Foundation (https://www.apache.org/).\n\nThis product contains parts that were originally based on software from BEA.\nCopyright (c) 2000-2003, BEA Systems, <http://www.bea.com/>.\n\nThis product contains W3C XML Schema documents. Copyright 2001-2003 (c)\nWorld Wide Web Consortium (Massachusetts Institute of Technology, European\nResearch Consortium for Informatics and Mathematics, Keio University)\n\nThis product contains the Piccolo XML Parser for Java\n(http://piccolo.sourceforge.net/). Copyright 2002 Yuval Oren.\n\nThis product contains the chunks_parse_cmds.tbl file from the vsdump program.\nCopyright (C) 2006-2007 Valek Filippov (frob@df.ru)\n\nThis product contains parts of the eID Applet project \n(http://eid-applet.googlecode.com). Copyright (c) 2009-2014\nFedICT (federal ICT department of Belgium), e-Contract.be BVBA (https://www.e-contract.be),\nBart Hanssens from FedICT\n";
 				JOptionPane.showMessageDialog(null, txt);
@@ -196,7 +264,8 @@ public class App extends JFrame implements ActionListener {
 	 * Ausgelöst durch Klick auf "Daten laden"
 	 */
 	private void laden() {
-		JFileChooser jfc = new JFileChooser("G:\\AG_Verkehrsdaten\\Projekte\\DTV-Tabelle\\Originaldateien");
+		JFileChooser jfc = new JFileChooser(
+				"\\\\lgv-fseco\\UDP-Fileshare$\\NonConfData\\verkehrsstaerken\\pegel\\excel");
 		FileNameExtensionFilter filter = new FileNameExtensionFilter("Excel-Tabellen", "xls", "xlsx");
 		jfc.setFileFilter(filter);
 		jfc.setMultiSelectionEnabled(true);
@@ -261,19 +330,39 @@ public class App extends JFrame implements ActionListener {
 					runden = jcbRunden.getSelectedIndex() + 1;
 				}
 
-				if (transTablePath.getText().equals("(keine Übersetzungstabelle)")) {
-					// Exportklasse anstarten
-					new DataFormer(this, datei, dateien, runden);
-				} else {
+				DataFormer dataFormer = new DataFormer(this, datei, dateien, runden);
+
+				if (!transTablePath.getText().equals("(keine Tabelle gewählt)")) {
 					File transTable = new File(transTablePath.getText());
 					if (transTable.exists()) {
 						// Exportklasse anstarten
-						new DataFormer(this, datei, dateien, runden, transTable);
+						dataFormer.setTransFile(transTable);
 					} else {
 						JOptionPane.showMessageDialog(null, "Übersetzungstabelle nicht gefunden!");
 					}
 				}
 
+				if (!anmerkungenPath.getText().equals("(keine Tabelle gewählt)")) {
+					File anmTable = new File(anmerkungenPath.getText());
+					if (anmTable.exists()) {
+						// Exportklasse anstarten
+						dataFormer.setAnmerkungFile(anmTable);
+					} else {
+						JOptionPane.showMessageDialog(null, "Übersetzungstabelle nicht gefunden!");
+					}
+				}
+
+				if (!erhebungsMethodenPath.getText().equals("(keine Tabelle gewählt)")) {
+					File erfTable = new File(erhebungsMethodenPath.getText());
+					if (erfTable.exists()) {
+						// Exportklasse anstarten
+						dataFormer.setErhebungFile(erfTable);
+					} else {
+						JOptionPane.showMessageDialog(null, "Übersetzungstabelle nicht gefunden!");
+					}
+				}
+
+				dataFormer.start();
 			}
 		} else {
 			// Fehlermeldung falls keine Datei geladen war
@@ -330,7 +419,19 @@ public class App extends JFrame implements ActionListener {
 	}
 
 	private void transTable() {
-		JFileChooser jfc = new JFileChooser("G:\\AG_Verkehrsdaten\\Projekte\\DTV-Tabelle\\Übersetzungstabellen");
+		this.singleXLSSelect(this.transTablePath);
+	}
+
+	private void anmerkungenTable() {
+		this.singleXLSSelect(this.anmerkungenPath);
+	}
+
+	private void erhebungsMethodenTable() {
+		this.singleXLSSelect(this.erhebungsMethodenPath);
+	}
+
+	private void singleXLSSelect(JTextField textField) {
+		JFileChooser jfc = new JFileChooser("\\\\lgv-fseco\\UDP-Fileshare$\\NonConfData\\verkehrsstaerken\\pegel");
 		FileNameExtensionFilter filter = new FileNameExtensionFilter("Excel-Tabellen", "xls", "xlsx");
 		jfc.setFileFilter(filter);
 		jfc.setAcceptAllFileFilterUsed(false);
@@ -339,7 +440,7 @@ public class App extends JFrame implements ActionListener {
 		if (ok == JFileChooser.APPROVE_OPTION) {
 			File datei = jfc.getSelectedFile();
 			if (datei != null) {
-				this.transTablePath.setText(datei.getAbsolutePath());
+				textField.setText(datei.getAbsolutePath());
 			}
 		}
 	}

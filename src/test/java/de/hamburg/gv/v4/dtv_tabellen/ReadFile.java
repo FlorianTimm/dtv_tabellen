@@ -36,8 +36,8 @@ public class ReadFile {
 
         JFrame frame = new JFrame();
 
-        new DataFormer(frame, file, dateien, 3);
-
+        DataFormer df = new DataFormer(frame, file, dateien, 3);
+        df.start();
     }
 
     @Test
